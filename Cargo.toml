@@ -1,7 +1,7 @@
 [package]
 edition = "2021"
-name = "lapce-plugin-template"
-version = "0.0.0"
+name = "lapce-go"
+version = "0.0.1"
 resolver = "2"
 
 [target.'cfg(target_os = "wasi")'.dependencies]
@@ -12,6 +12,7 @@ serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 # lapce-plugin = { git = "https://github.com/lapce/lapce-plugin-rust.git", branch = "volt" }
 lapce-plugin = { git = "https://github.com/panekj/lapce-plugin-rust.git", branch = "volt" }
+# lapce-plugin = { path = "../../lapce-plugin-rust" }
 
 [profile.release]
 opt-level = 3

@@ -1,10 +1,15 @@
-use anyhow::Result;
+use std::{
+    env::{self, VarError},
+    path::PathBuf,
+};
+
+use anyhow::{anyhow, Result};
 use lapce_plugin::{
     psp_types::{
-        lsp_types::{request::Initialize, InitializeParams, Url},
+        lsp_types::{request::Initialize, DocumentFilter, DocumentSelector, InitializeParams, Url},
         Request,
     },
-    register_plugin, LapcePlugin, VoltEnvironment, PLUGIN_RPC,
+    register_plugin, LapcePlugin, PLUGIN_RPC,
 };
 use serde_json::Value;
 
@@ -13,22 +18,41 @@ struct State {}
 
 register_plugin!(State);
 
-const LANGUAGE_ID: &str = "language_id";
-
 fn initialize(params: InitializeParams) -> Result<()> {
-    // Check for user specified LSP server path
-    // ```
-    // [lapce-plugin-name.lsp]
-    // serverPath = "[path or filename]"
-    // ```
+    let document_selector: DocumentSelector = vec![DocumentFilter {
+        language: Some(String::from("go")),
+        pattern: Some(String::from("**.go")),
+        scheme: None,
+    }];
+    let mut server_args = vec![];
+
     if let Some(options) = params.initialization_options.as_ref() {
         if let Some(lsp) = options.get("lsp") {
+            if let Some(args) = lsp.get("serverArgs") {
+                if let Some(args) = args.as_array() {
+                    if !args.is_empty() {
+                        server_args = vec![];
+                    }
+                    for arg in args {
+                        if let Some(arg) = arg.as_str() {
+                            server_args.push(arg.to_string());
+                        }
+                    }
+                }
+            }
+
             if let Some(server_path) = lsp.get("serverPath") {
                 if let Some(server_path) = server_path.as_str() {
                     if !server_path.is_empty() {
+                        let url = Url::parse(&format!("urn:{}", server_path))?;
+
+                        PLUGIN_RPC.stderr(&format!("url: {url}"));
+                        PLUGIN_RPC.stderr(&format!("args: {server_args:?}"));
+
                         PLUGIN_RPC.start_lsp(
-                            Url::parse(&format!("urn:{}", server_path))?,
-                            LANGUAGE_ID,
+                            url,
+                            server_args,
+                            document_selector,
                             params.initialization_options,
                         );
                         return Ok(());
@@ -38,40 +62,48 @@ fn initialize(params: InitializeParams) -> Result<()> {
         }
     }
 
-    // Architecture check
-    let _ = match VoltEnvironment::architecture().as_deref() {
-        Ok("x86_64") => "x86_64",
-        Ok("aarch64") => "aarch64",
-        _ => return Ok(()),
+    let server_path = match env::var("GOBIN") {
+        Ok(var) => var,
+        Err(error) => match error {
+            VarError::NotPresent => match env::var("GOPATH") {
+                Ok(var) => format!("{var}/bin"),
+                Err(error) => match error {
+                    VarError::NotPresent => {
+                        let home = match env::var("HOME") {
+                            Ok(var) => var,
+                            Err(_) => return Err(anyhow!("couldn't fine any path for gopls")),
+                        };
+                        PathBuf::from(home)
+                            .join("go")
+                            .join("bin")
+                            .to_string_lossy()
+                            .to_string()
+                    }
+                    VarError::NotUnicode(val) => {
+                        let val = val.to_string_lossy();
+                        return Err(anyhow!("GOBIN is not in unicode format: '{val}'"));
+                    }
+                },
+            },
+            VarError::NotUnicode(val) => {
+                let val = val.to_string_lossy();
+                return Err(anyhow!("GOBIN is not in unicode format: '{val}'"));
+            }
+        },
     };
 
-    // OS check
-    let _ = match VoltEnvironment::operating_system().as_deref() {
-        Ok("macos") => "macos",
-        Ok("linux") => "linux",
-        Ok("windows") => "windows",
-        _ => return Ok(()),
-    };
+    // Slash at the end is important, otherwise last path element is removed
+    let server_path = Url::parse(&format!("urn:{server_path}/"))?.join("gopls")?;
 
-    // Download URL
-    // let _ = format!("https://github.com/<name>/<project>/releases/download/<version>/{filename}");
+    PLUGIN_RPC.stderr(&format!("path: {server_path}"));
+    PLUGIN_RPC.stderr(&format!("args: {server_args:?}"));
 
-    // see lapce_plugin::Http for available API to download files
-
-    let _ = match VoltEnvironment::operating_system().as_deref() {
-        Ok("windows") => {
-            format!("{}.exe", "[filename]")
-        }
-        _ => "[filename]".to_string(),
-    };
-
-    // Plugin working directory
-    let volt_uri = VoltEnvironment::uri()?;
-    let exec_path = Url::parse(&volt_uri)?.join("[filename]")?;
-
-    // Available language IDs
-    // https://github.com/lapce/lapce/blob/HEAD/lapce-proxy/src/buffer.rs#L173
-    PLUGIN_RPC.start_lsp(exec_path, LANGUAGE_ID, params.initialization_options);
+    PLUGIN_RPC.start_lsp(
+        server_path,
+        server_args,
+        document_selector,
+        params.initialization_options,
+    );
 
     Ok(())
 }
