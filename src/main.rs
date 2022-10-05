@@ -45,10 +45,6 @@ fn initialize(params: InitializeParams) -> Result<()> {
                 if let Some(server_path) = server_path.as_str() {
                     if !server_path.is_empty() {
                         let url = Url::parse(&format!("urn:{}", server_path))?;
-
-                        PLUGIN_RPC.stderr(&format!("url: {url}"));
-                        PLUGIN_RPC.stderr(&format!("args: {server_args:?}"));
-
                         PLUGIN_RPC.start_lsp(
                             url,
                             server_args,
@@ -95,9 +91,6 @@ fn initialize(params: InitializeParams) -> Result<()> {
     // Slash at the end is important, otherwise last path element is removed
     let server_path = Url::parse(&format!("urn:{server_path}/"))?.join("gopls")?;
 
-    PLUGIN_RPC.stderr(&format!("path: {server_path}"));
-    PLUGIN_RPC.stderr(&format!("args: {server_args:?}"));
-
     PLUGIN_RPC.start_lsp(
         server_path,
         server_args,
@@ -114,7 +107,9 @@ impl LapcePlugin for State {
         match method.as_str() {
             Initialize::METHOD => {
                 let params: InitializeParams = serde_json::from_value(params).unwrap();
-                let _ = initialize(params);
+                if let Err(e) = initialize(params) {
+                    PLUGIN_RPC.stderr(&format!("plugin returned with error: {e}"))
+                }
             }
             _ => {}
         }
