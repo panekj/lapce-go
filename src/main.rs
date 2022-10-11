@@ -27,8 +27,8 @@ fn initialize(params: InitializeParams) -> Result<()> {
     let mut server_args = vec![];
 
     if let Some(options) = params.initialization_options.as_ref() {
-        if let Some(lsp) = options.get("lsp") {
-            if let Some(args) = lsp.get("serverArgs") {
+        if let Some(volt) = options.get("volt") {
+            if let Some(args) = volt.get("serverArgs") {
                 if let Some(args) = args.as_array() {
                     if !args.is_empty() {
                         server_args = vec![];
@@ -41,7 +41,7 @@ fn initialize(params: InitializeParams) -> Result<()> {
                 }
             }
 
-            if let Some(server_path) = lsp.get("serverPath") {
+            if let Some(server_path) = volt.get("serverPath") {
                 if let Some(server_path) = server_path.as_str() {
                     if !server_path.is_empty() {
                         let url = Url::parse(&format!("urn:{}", server_path))?;
