@@ -1,9 +1,10 @@
 name = "lapce-go"
-version = "2.0.0"
+version = "2022.11.10"
 author = "panekj"
 display-name = "Go (gopls)"
 description = "Go for Lapce using gopls"
 wasm = "bin/lapce-go.wasm"
+icon = "Go-Logo_LightBlue.svg"
 
 [activation]
 language = ["go"]
@@ -20,15 +21,15 @@ description = "Path to custom Go LSP executable"
 # default = []
 # description = "Arguments to pass to custom Go LSP executable"
 
-# [config."buildFlags"]
+# [config."gopls.buildFlags"]
 # default = []
 # description = "buildFlags is the set of flags passed on to the build system when invoked. It is applied to queries like `go list`, which is used when discovering files. The most common use is to set `-tags`."
 
-# [config."env"]
+# [config."gopls.env"]
 # default = {}
 # description = "env adds environment variables to external commands run by `gopls`, most notably `go list`."
 
-# [config."directoryFilters"]
+# [config."gopls.directoryFilters"]
 # default = ["-node_modules"]
 # description = """
 # directoryFilters can be used to exclude unwanted directories from the workspace. By default, all directories are included. Filters are an operator, `+` to include and `-` to exclude, followed by a path prefix relative to the workspace folder. They are evaluated in order, and the last filter that applies to a path controls whether it is included. The path prefix can be empty, so an initial `-` excludes everything.
@@ -41,11 +42,11 @@ description = "Path to custom Go LSP executable"
 #     Include only project_a, but not node_modules inside it: `-`, `+project_a`, `-project_a/node_modules`
 # """
 
-# [config."templateExtensions"]
+# [config."gopls.templateExtensions"]
 # default = []
 # description = "templateExtensions gives the extensions of file names that are treateed as template files. (The extension is the part of the file name after the final dot.)"
 
-[config."memoryMode"]
+[config."gopls.memoryMode"]
 default = "Normal"
 description = """
 This setting is experimental and may be deleted.
@@ -58,7 +59,7 @@ Must be one of:
 - `"Normal"`
 """
 
-[config."expandWorkspaceToModule"]
+[config."gopls.expandWorkspaceToModule"]
 default = true
 description = """
 This setting is experimental and may be deleted.
@@ -66,7 +67,7 @@ This setting is experimental and may be deleted.
 expandWorkspaceToModule instructs `gopls` to adjust the scope of the workspace to find the best available module root. gopls first looks for a go.mod file in any parent directory of the workspace folder, expanding the scope to that directory if it exists. If no viable parent directory is found, gopls will check if there is exactly one child directory containing a go.mod file, narrowing the scope to that directory if it exists.
 """
 
-[config."experimentalWorkspaceModule"]
+[config."gopls.experimentalWorkspaceModule"]
 default = false
 description = """
 This setting is experimental and may be deleted.
@@ -74,7 +75,7 @@ This setting is experimental and may be deleted.
 experimentalWorkspaceModule opts a user into the experimental support for multi-module workspaces.
 """
 
-[config."experimentalPackageCacheKey"]
+[config."gopls.experimentalPackageCacheKey"]
 default = true
 description = """
 This setting is experimental and may be deleted.
@@ -82,7 +83,7 @@ This setting is experimental and may be deleted.
 experimentalPackageCacheKey controls whether to use a coarser cache key for package type information to increase cache hits. This setting removes the user's environment, build flags, and working directory from the cache key, which should be a safe change as all relevant inputs into the type checking pass are already hashed into the key. This is temporarily guarded by an experiment because caching behavior is subtle and difficult to comprehensively test.
 """
 
-[config."allowModfileModifications"]
+[config."gopls.allowModfileModifications"]
 default = false
 description = """
 This setting is experimental and may be deleted.
