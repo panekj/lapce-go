@@ -5,6 +5,7 @@ display-name = "Go (gopls)"
 description = "Go for Lapce using gopls"
 wasm = "bin/lapce-go.wasm"
 icon = "Go-Logo_LightBlue.svg"
+repository = "https://github.com/lapce-community/lapce-go"
 
 [activation]
 language = ["go"]
