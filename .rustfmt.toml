@@ -1,5 +1,7 @@
 reorder_imports = true
 newline_style = "unix"
-# uncomment once stable
-# imports_granularity = "Crate"
-# group_imports = "StdExternalCrate"
+# unstable
+enum_discrim_align_threshold = 20
+struct_field_align_threshold = 20
+imports_granularity = "Crate"
+group_imports = "StdExternalCrate"

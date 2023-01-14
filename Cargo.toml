@@ -5,14 +5,20 @@ version = "0.0.0"
 resolver = "2"
 
 [target.'cfg(target_os = "wasi")'.dependencies]
+semver = "1.0"
 
 # default deps for all lapce plugins
 anyhow = "1.0"
+thiserror = "1.0"
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-lapce-plugin = { git = "https://github.com/lapce/lapce-plugin-rust.git" }
-# lapce-plugin = { git = "https://github.com/panekj/lapce-plugin-rust.git", branch = "volt" }
-# lapce-plugin = { path = "../../lapce-plugin-rust" }
+
+[target.'cfg(target_os = "wasi")'.dependencies.volt]
+package = "lapce-plugin"
+git = "https://github.com/lapce/lapce-plugin-rust.git"
+# git = "https://github.com/panekj/lapce-plugin-rust.git"
+# branch = "volt"
+# path = "../../lapce-plugin-rust"
 
 [profile.release]
 opt-level = 3
