@@ -94,7 +94,7 @@ dependencies = [
 [[package]]
 name = "lapce-plugin"
 version = "0.1.0"
-source = "git+https://github.com/lapce/lapce-plugin-rust.git#8a2ad4bfba4d0fd1f80cdbdc772e8bfee624445f"
+source = "git+https://github.com/lapce/lapce-plugin-rust.git?rev=1657b855016c6bb50953e74eba4d079bf3173d63#1657b855016c6bb50953e74eba4d079bf3173d63"
 dependencies = [
  "anyhow",
  "bytes",
@@ -104,6 +104,7 @@ dependencies = [
  "psp-types",
  "serde",
  "serde_json",
+ "thiserror",
  "wasi-experimental-http",
 ]
 

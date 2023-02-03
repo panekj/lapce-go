@@ -11,8 +11,8 @@ use serde_json::Value;
 use volt::{
     psp_types::{
         lsp_types::{
-            request::Initialize, DocumentFilter, DocumentSelector, InitializeParams, MessageType,
-            Url,
+            request::Initialize, DocumentFilter, DocumentSelector, InitializeParams,
+            InitializeResult, Url,
         },
         Request,
     },
@@ -47,7 +47,10 @@ macro_rules! string {
         String::from($s)
     };
 }
-fn initialize(params: InitializeParams) -> Result<()> {
+
+type LspParams = (Url, Vec<String>, Vec<DocumentFilter>, Option<Value>);
+
+fn calculate_lsp_params(params: InitializeParams) -> Result<LspParams> {
     let document_selector: DocumentSelector = vec![DocumentFilter {
         language: Some(string!("go")),
         pattern:  Some(string!("**.go")),
@@ -77,8 +80,7 @@ fn initialize(params: InitializeParams) -> Result<()> {
                 if let Some(server_path) = server_path.as_str() {
                     if !server_path.is_empty() {
                         let url = Url::parse(&format!("urn:{server_path}"))?;
-                        PLUGIN_RPC.start_lsp(url, server_args, document_selector, options);
-                        return Ok(());
+                        return Ok((url, server_args, document_selector, options));
                     }
                 }
             }
@@ -127,27 +129,23 @@ fn initialize(params: InitializeParams) -> Result<()> {
 
     let server_uri = Url::parse(&format!("urn:{}", server_path.display()))?;
 
-    PLUGIN_RPC.start_lsp(dbg!(server_uri), server_args, document_selector, options);
-
-    Ok(())
+    Ok((server_uri, server_args, document_selector, options))
 }
 
 impl LapcePlugin for State {
-    fn handle_request(&mut self, _id: u64, method: String, params: Value) {
+    fn handle_request(&mut self, id: u64, method: String, params: Value) {
         #[allow(clippy::single_match)]
         match method.as_str() {
             Initialize::METHOD => {
                 let params: InitializeParams = serde_json::from_value(params).unwrap();
-                if let Err(e) = initialize(params) {
-                    PLUGIN_RPC.window_show_message(
-                        MessageType::ERROR,
-                        format!("plugin returned with error: {e}"),
-                    );
-                } else {
-                    PLUGIN_RPC.window_log_message(
-                        MessageType::INFO,
-                        string!("plugin finished execution"),
-                    );
+                match calculate_lsp_params(params) {
+                    Ok((uri, args, filters, options)) => {
+                        PLUGIN_RPC.start_lsp(uri, args, filters, options).unwrap();
+                        PLUGIN_RPC
+                            .host_success(id, InitializeResult::default())
+                            .unwrap();
+                    }
+                    Err(err) => PLUGIN_RPC.host_error(id, err.to_string()).unwrap(),
                 }
             }
             _ => {}
