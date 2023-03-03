@@ -1,5 +1,5 @@
 {
-    "rust-analyzer.checkOnSave.command": "clippy",
-    "rust-analyzer.cargo.target": "wasm32-wasi",
-    "rust-analyzer.rustfmt.overrideCommand": ["cargo", "+nightly", "fmt"]
+  "rust-analyzer.checkOnSave.command": "clippy",
+  "rust-analyzer.cargo.target": "wasm32-wasi",
+  "rust-analyzer.rustfmt.overrideCommand": ["rustfmt", "+nightly"]
 }
