@@ -161,7 +161,7 @@ const GOPLS: GoTool<'_> = GoTool {
     replaced_by_gopls:        false,
     description:              "Language Server from Google",
     default_version:          None,
-    latest_version:           Some("v0.10.1"),
+    latest_version:           None,
     latest_version_timestamp: None,
     minimum_go_version:       Some(Version::new(1, 13, 0)),
 };
@@ -175,7 +175,7 @@ const DLV: GoTool<'_> = GoTool {
     description:              "Go debugger (Delve)",
     default_version:          None,
     minimum_go_version:       Some(Version::new(1, 12, 0)),
-    latest_version:           Some("v1.6.1"),
+    latest_version:           None,
     latest_version_timestamp: None,
 };
 
