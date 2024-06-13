@@ -1,5 +1,5 @@
 name = "lapce-go"
-version = "2023.1.0"
+version = "2024.1.0"
 author = "panekj"
 display-name = "Go (gopls)"
 description = "Go for Lapce using gopls"

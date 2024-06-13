@@ -84,13 +84,25 @@ fn initialize(params: InitializeParams) -> Result<()> {
             }
         }
     }
-
+    
     for tool in tools::ALL_TOOLS_INFORMATION {
+        #[cfg(windows)]
+        let exists = PLUGIN_RPC.execute_process(string!("where"), vec![tool.name.to_string()])?.success;
+        #[cfg(not(windows))]
+        let exists = PLUGIN_RPC.execute_process(string!("which"), vec![tool.name.to_string()])?.success;
+        
+        if exists {
+            PLUGIN_RPC.stderr(&format!("{} exists, SKIPPED.", tool.import_path));
+            continue;
+        }
+        
         if !PLUGIN_RPC
             .execute_process(string!("go"), vec![string!("install"), tool.install_path()])?
             .success
         {
             return Err(anyhow!("Failed to install tool: {}", tool.name));
+        } else {
+            PLUGIN_RPC.stderr(&format!("Installing {}@{} SUCCEED", tool.import_path, tool.default_version.unwrap_or("latest")));
         }
     }
 
